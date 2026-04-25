@@ -1,6 +1,17 @@
 // ======================= 配置 =======================
 const avatarBasePath = "./head/";
 
+// 获取或生成 sessionId
+function getSessionId() {
+  let id = localStorage.getItem("sdti_session_id");
+  if (!id) {
+    id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36) + Date.now();
+    localStorage.setItem("sdti_session_id", id);
+  }
+  return id;
+}
+
+
 // DeepSeek API 配置（⚠️ 前端暴露密钥有安全风险，仅供测试）
 const DEEPSEEK_API_KEY = "sk-eHyFADREI1txyoAbftIRSvodXdW2qJasTvE89xLLbk4R4L0B";
 const DEEPSEEK_API_URL = "https://openrouter.fans/v1/chat/completions";
