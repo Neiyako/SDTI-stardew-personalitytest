@@ -3,7 +3,7 @@ const avatarBasePath = "./head/";
 
 // DeepSeek API 配置（⚠️ 前端暴露密钥有安全风险，仅供测试）
 const DEEPSEEK_API_KEY = "sk-eHyFADREI1txyoAbftIRSvodXdW2qJasTvE89xLLbk4R4L0B";
-const DEEPSEEK_API_URL = "https://openrouter.fans/v1";
+const DEEPSEEK_API_URL = "https://openrouter.fans";
 
 // 角色数据（含介绍）
 const CHARACTERS = [
