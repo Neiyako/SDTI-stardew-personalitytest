@@ -205,6 +205,17 @@ fetch("/api/submit", {   // 注意：相对路径，自动指向当前域名
     })
 }).catch(err => console.error("上报失败:", err));
 
+  fetch("/api/submit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+        sessionId: getSessionId(),
+        answers: userSelections,
+        matchedCharacter: best.name,
+        matchPercent: best.matchRate
+    })
+}).catch(console.error);
+
     // 先渲染基础信息，分析区域显示加载动画
     resultDiv.innerHTML = `
         <div class="match-header">
