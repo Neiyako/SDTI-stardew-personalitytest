@@ -184,7 +184,7 @@ async function showResults() {
 
   // 在 showResults 函数内部，获取 best 和 userSelections 后，添加以下代码
 const sessionId = getSessionId();
-fetch("https://sdti-api.您的子域.workers.dev/api/submit", {
+fetch("https://https://sdti-api.neiyako.workers.dev/api/submit", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
