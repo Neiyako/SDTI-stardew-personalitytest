@@ -225,13 +225,29 @@ function computeSimilarity(userNorm, charTags) {
     return Math.min(99.9, Math.max(0, similarity));
 }
 
+function gaussianProb(x, mean, sigma = 2.0) {
+    let exponent = -Math.pow(x - mean, 2) / (2 * sigma * sigma);
+    return (1 / (Math.sqrt(2 * Math.PI) * sigma)) * Math.exp(exponent);
+}
+
 function findBestMatch(userNorm) {
-    let matches = CHARACTERS.map(char => {
-        let sim = computeSimilarity(userNorm, char.tags);
-        return { ...char, matchRate: sim };
+    let logProbs = CHARACTERS.map(char => {
+        let logLik = 0;
+        for (let d = 0; d < 6; d++) {
+            logLik += Math.log(gaussianProb(userNorm[d], char.tags[d], 2.0));
+        }
+        return { ...char, logPost: logLik }; // 先验 log(1/12) 可忽略（常数）
     });
-    matches.sort((a, b) => b.matchRate - a.matchRate);
-    return matches;
+    // 找出 logPost 最大的角色
+    logProbs.sort((a,b) => b.logPost - a.logPost);
+    // 可选：计算软概率（对 log 值做 softmax）
+    let maxLog = logProbs[0].logPost;
+    let exps = logProbs.map(c => Math.exp(c.logPost - maxLog));
+    let sumExps = exps.reduce((a,b)=>a+b,0);
+    logProbs.forEach((c, idx) => {
+        c.matchRate = (exps[idx] / sumExps) * 100;
+    });
+    return logProbs;
 }
 
 function showResults() {
