@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SDTI · 星露谷人格测试</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <!-- 初始欢迎界面（小鸡动图 + 开始按钮） -->
+    <div class="intro-panel" id="introPanel">
+        <div class="chicken-area">
+            <img class="chicken-gif" id="chickenGif" alt="可爱小鸡" />
+            <div class="start-btn-wrapper">
+                <button class="btn-start" id="startBtn">🌱 开始测试 🌱</button>
+            </div>
+        </div>
+        <div class="intro-footer">
+            <p>🐱点我开始星露谷人格之旅🐱～</p>
+        </div>
+    </div>
+
+    <!-- 测试面板（初始隐藏） -->
+    <div class="test-panel" id="testPanel" style="display: none;">
+        <div class="section-title">🌻 20道田园心选择题</div>
+        <div class="questions-grid" id="questionsContainer"></div>
+        <div class="submit-area">
+            <button class="btn-submit" id="submitBtn">🌟 揭示我的星露谷人格 🌟</button>
+        </div>
+    </div>
+
+    <!-- 结果面板（初始隐藏） -->
+    <div class="result-panel" id="resultPanel" style="display: none;">
+        <div class="result-card" id="resultContent"></div>
+        <footer>
+            ⚡ 算法原理：计算你在「外向·好奇·怜悯·勤勉·自然·浪漫」六维上的偏好向量，与星露谷角色预置标签求欧氏距离，匹配度最高者即你的灵魂伙伴。<br>
+            ※ 头像路径默认为 <code>/Users/apple/Desktop/星露谷/英文名.png</code>，小鸡动图使用同一文件夹下的 <code>1.gif</code>。
+        </footer>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
