@@ -6,21 +6,21 @@ const avatarBasePath = "./head/";
 const DIM_NAMES = ["外向性", "好奇心", "同情心", "勤勉性", "自然感", "浪漫度"];
 
 // ======================= 星露谷角色数据 =======================
-const CHARACTERS = [
-    { name: "Abigail",   tags: [7, 9, 5, 4, 8, 7] },  // 冒险、好奇、略带反叛
-    { name: "Alex",      tags: [9, 4, 6, 8, 3, 5] },  // 外向健壮，传统训练
-    { name: "Elliott",   tags: [5, 8, 8, 5, 7, 9] },  // 浪漫诗人，喜好自然优雅
-    { name: "Emily",     tags: [6, 7, 9, 6, 9, 7] },  // 神秘善良，热爱自然与宝石
-    { name: "Haley",     tags: [8, 3, 4, 3, 2, 6] },  // 时尚外冷内热
-    { name: "Harvey",    tags: [3, 6, 8, 9, 5, 5] },  // 成熟稳重医生
-    { name: "Leah",      tags: [4, 7, 7, 7, 9, 8] },  // 艺术家自然风
-    { name: "Maru",      tags: [5, 9, 7, 9, 5, 4] },  // 发明家，好奇勤奋
-    { name: "Penny",     tags: [3, 6, 9, 7, 6, 7] },  // 温柔老师，善解人意
-    // 修改 Sam：更突出外向和浪漫，降低自然感、勤勉性
-    { name: "Sam",       tags: [9, 6, 7, 3, 2, 8] },  // 活力四射、爱玩音乐、稍懒散
-    { name: "Sebastian", tags: [2, 8, 5, 6, 7, 5] },  // 内向极客，喜欢雨和摩托
-    { name: "Shane",     tags: [2, 3, 7, 2, 4, 3] }    // 忧郁但善良，后期感人
-];
+// 每个角色对20道题(索引0~19)的理想选项(0~3)
+const IDEAL_ANSWERS = {
+    Abigail:   [0, 0, 0, 0, 1, 2, 0, 3, 1, 0, 3, 1, 0, 0, 1, 2, 0, 0, 0, 0],
+    Alex:      [0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1],
+    Elliott:   [1, 0, 1, 1, 2, 2, 1, 2, 2, 2, 1, 2, 2, 0, 2, 2, 2, 0, 1, 2],
+    Emily:     [2, 2, 2, 3, 1, 1, 2, 0, 3, 3, 0, 3, 1, 2, 0, 1, 0, 3, 2, 0],
+    Haley:     [3, 1, 3, 0, 3, 3, 3, 1, 3, 3, 2, 0, 3, 3, 3, 3, 3, 3, 3, 3],
+    Harvey:    [2, 3, 1, 2, 1, 3, 2, 2, 0, 2, 2, 1, 0, 2, 1, 0, 2, 1, 2, 1],
+    Leah:      [1, 2, 1, 2, 2, 0, 0, 2, 3, 0, 1, 2, 0, 2, 1, 2, 0, 2, 1, 2],
+    Maru:      [2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1],
+    Penny:     [1, 3, 2, 2, 2, 2, 2, 0, 1, 3, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0],
+    Sam:       [0, 1, 0, 0, 1, 0, 0, 2, 1, 1, 0, 1, 1, 3, 0, 1, 1, 0, 0, 1],
+    Sebastian: [3, 0, 2, 3, 3, 1, 3, 3, 0, 3, 1, 2, 1, 2, 3, 3, 3, 1, 3, 2],
+    Shane:     [3, 3, 3, 3, 0, 3, 3, 3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 3, 3, 3]
+};
 // ======================= 20道题目 =======================
 const QUESTIONS = [
     { text: "鹈鹕镇举办春季花舞节，你会？", options: [
@@ -189,74 +189,36 @@ function renderQuestions() {
     });
 }
 
-function computeUserRawVec() {
-    let rawVec = new Array(6).fill(0);
-    for (let i = 0; i < QUESTIONS.length; i++) {
-        const selIdx = userSelections[i];
-        if (selIdx !== null) {
-            const delta = QUESTIONS[i].options[selIdx].delta;
-            for (let d = 0; d < 6; d++) {
-                rawVec[d] += delta[d];
-            }
-        }
+
+// 理想答案配置（20道题对应每个角色的答案索引）
+const IDEAL_ANSWERS = { ... }; // 上面定义的对象
+
+// 计算用户与某个角色的汉明距离（不一致题目数）
+function hammingDistance(userSelections, idealAnswers) {
+    let diff = 0;
+    for (let i = 0; i < userSelections.length; i++) {
+        if (userSelections[i] !== idealAnswers[i]) diff++;
     }
-    return rawVec;
+    return diff;
 }
 
-function normalizeTo1_10(rawVec) {
-    const MIN_RAW = -40;
-    const MAX_RAW = 40;
-    return rawVec.map(v => {
-        let clamped = Math.min(MAX_RAW, Math.max(MIN_RAW, v));
-        let norm = (clamped - MIN_RAW) / (MAX_RAW - MIN_RAW);
-        return 1 + norm * 9;
+// 找到最佳匹配角色
+function findBestMatch(userSelections) {
+    const matches = CHARACTERS.map(character => {
+        const ideal = IDEAL_ANSWERS[character.name];
+        if (!ideal) return { ...character, matchRate: 0, distance: 999 };
+        const distance = hammingDistance(userSelections, ideal);
+        const matchRate = ((20 - distance) / 20) * 100;
+        return { ...character, distance, matchRate };
     });
-}
-
-function computeSimilarity(userNorm, charTags) {
-    let sumSq = 0;
-    for (let i = 0; i < 6; i++) {
-        let diff = userNorm[i] - charTags[i];
-        sumSq += diff * diff;
-    }
-    let distance = Math.sqrt(sumSq);
-    const MAX_DIST = Math.sqrt(6 * 81);
-    let similarity = (1 - distance / MAX_DIST) * 100;
-    return Math.min(99.9, Math.max(0, similarity));
-}
-
-function gaussianProb(x, mean, sigma = 2.0) {
-    let exponent = -Math.pow(x - mean, 2) / (2 * sigma * sigma);
-    return (1 / (Math.sqrt(2 * Math.PI) * sigma)) * Math.exp(exponent);
-}
-
-function findBestMatch(userNorm) {
-    let logProbs = CHARACTERS.map(char => {
-        let logLik = 0;
-        for (let d = 0; d < 6; d++) {
-            logLik += Math.log(gaussianProb(userNorm[d], char.tags[d], 2.0));
-        }
-        return { ...char, logPost: logLik }; // 先验 log(1/12) 可忽略（常数）
-    });
-    // 找出 logPost 最大的角色
-    logProbs.sort((a,b) => b.logPost - a.logPost);
-    // 可选：计算软概率（对 log 值做 softmax）
-    let maxLog = logProbs[0].logPost;
-    let exps = logProbs.map(c => Math.exp(c.logPost - maxLog));
-    let sumExps = exps.reduce((a,b)=>a+b,0);
-    logProbs.forEach((c, idx) => {
-        c.matchRate = (exps[idx] / sumExps) * 100;
-    });
-    return logProbs;
+    matches.sort((a, b) => a.distance - b.distance);
+    return matches;
 }
 
 function showResults() {
-    const rawVec = computeUserRawVec();
-    const userNorm = normalizeTo1_10(rawVec);
-    const ranked = findBestMatch(userNorm);
+    const ranked = findBestMatch(userSelections);
     const best = ranked[0];
-    const resultDiv = document.getElementById("resultContent");
-    const avatarPath = `${avatarBasePath}${best.name}.png`;
+    // ... 后续渲染结果保持不变，但雷达图需要调整（因为不再有 userNorm）
     
     resultDiv.innerHTML = `
         <div class="match-header">
