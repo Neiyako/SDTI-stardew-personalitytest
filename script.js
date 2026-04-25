@@ -182,6 +182,19 @@ async function showResults() {
     const resultDiv = document.getElementById("resultContent");
     const avatarPath = `${avatarBasePath}${best.name}.png`;
 
+  // 在 showResults 函数内部，获取 best 和 userSelections 后，添加以下代码
+const sessionId = getSessionId();
+fetch("https://sdti-api.您的子域.workers.dev/api/submit", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    sessionId: sessionId,
+    answers: userSelections,          // 长度为20的数组，值 0~3
+    matchedCharacter: best.name,
+    matchPercent: best.matchRate
+  })
+}).catch(err => console.error("数据上报失败:", err));
+
     // 先渲染基础信息，分析区域显示加载动画
     resultDiv.innerHTML = `
         <div class="match-header">
