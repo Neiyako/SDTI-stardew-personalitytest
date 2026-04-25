@@ -182,18 +182,28 @@ async function showResults() {
     const resultDiv = document.getElementById("resultContent");
     const avatarPath = `${avatarBasePath}${best.name}.png`;
 
-  // 在 showResults 函数内部，获取 best 和 userSelections 后，添加以下代码
+ // 生成或获取 sessionId
+function getSessionId() {
+    let id = localStorage.getItem("sdti_session_id");
+    if (!id) {
+        id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36) + Date.now();
+        localStorage.setItem("sdti_session_id", id);
+    }
+    return id;
+}
+
+// 在 showResults() 内，拿到 best 和 userSelections 后调用上报（不阻塞体验）
 const sessionId = getSessionId();
-fetch("https://https://sdti-api.neiyako.workers.dev/api/submit", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    sessionId: sessionId,
-    answers: userSelections,          // 长度为20的数组，值 0~3
-    matchedCharacter: best.name,
-    matchPercent: best.matchRate
-  })
-}).catch(err => console.error("数据上报失败:", err));
+fetch("/api/submit", {   // 注意：相对路径，自动指向当前域名
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+        sessionId: sessionId,
+        answers: userSelections,
+        matchedCharacter: best.name,
+        matchPercent: best.matchRate
+    })
+}).catch(err => console.error("上报失败:", err));
 
     // 先渲染基础信息，分析区域显示加载动画
     resultDiv.innerHTML = `
